@@ -2,7 +2,7 @@ var express = require("express");
 var app = express();
 var bodyParser = require('body-parser');
 
-var mongoose = require('mongoose');
+var pg = require('pg');
 var passport = require('./strategies/user');
 var session = require('express-session');
 
@@ -35,18 +35,9 @@ app.use('/user', user);
 app.use('/', index);
 
 // Mongo Connection //
-var mongoURI = "mongodb://localhost:27017/user_passport_session";
-//var mongoURI = "";
+//var mongoURI = "mongodb://localhost:27017/user_passport_session";
 
-var mongoDB = mongoose.connect(mongoURI).connection;
-
-mongoDB.on('error', function(err){
-   if(err) console.log("MONGO ERROR: ", err);
-});
-
-mongoDB.once('open', function(){
-   console.log("Connected to Mongo, meow!");
-});
+var connectionString = process.env.DATABASE_URL   || 'postgres://localhost:5432/church';
 
 // Listen //
 app.listen(app.get("port"), function(){
