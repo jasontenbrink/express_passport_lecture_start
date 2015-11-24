@@ -17,6 +17,7 @@ router.get('/', function (req, res, next){
 
 router.post('/', function(req,res,next){
   var user = req.body;
+  // console.log('req.body', req.body);
 
 //  if(!user.isModified('password')) return next;
 
@@ -34,7 +35,7 @@ router.post('/', function(req,res,next){
             pg.connect(connectionString, function (err, client, done) {
               if (err) console.log(err);
               console.log('pwd from just before DB write', user);
-              client.query('insert into people (email, password) VALUES ($1, $2)',
+              client.query('insert into people (username, password) VALUES ($1, $2)',
                   [req.body.username, req.body.password],
                   function (err, res) {
                     if (err) console.log(err);
