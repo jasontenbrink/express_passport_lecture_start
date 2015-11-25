@@ -15,12 +15,12 @@ var index = require('./routes/index');
 app.set("port", (process.env.PORT || 5000));
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({expanded: true}));
+app.use(bodyParser.urlencoded({extended: true}));
 
 // Passport Session Configuration //
 app.use(session({
    secret: 'secret',
-   key: 'user',
+   key: 'user', //req.session
    resave: 'true',
    saveUninitialized: false,
    cookie: {maxage: 600000, secure: false}
@@ -30,8 +30,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use('/register', register);
-app.use('/user', user);
+//app.use('/register', register);
+//app.use('/user', user);
 app.use('/', index);
 
 // Mongo Connection //
@@ -43,3 +43,5 @@ var connectionString = process.env.DATABASE_URL   || 'postgres://localhost:5432/
 app.listen(app.get("port"), function(){
    console.log("Listening on port: " + app.get("port"));
 });
+
+module.export = app;

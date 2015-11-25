@@ -1,28 +1,43 @@
 var passport = require('passport');
 var localStrategy = require('passport-local').Strategy;
-var User = require('../models/user');
 var pg = require('pg');
+var User = require('../models/user');
 var Promise = require('bluebird');
 var bcrypt = require('bcrypt');
 
+
 var connectionString = process.env.DATABASE_URL   || 'postgres://localhost:5432/church';
+
+//what does this do?  Create the cookie?  Or maybe the session?
+//It runs after the local strategy
 passport.serializeUser(function(user, done){
+  // user parameter comes from the successful "done" in the bcrypt.compare method
+  // in the strategy
   console.log('Serializer, what is the value of username', user.username);
+  console.log('Serializer, what is the value of user', user);
 
     done(null, user.username);
 });
 
+// this puts things onto req.user.  Will put things on the req during
+// preprocessing/middleware
 passport.deserializeUser(function(id, done){
-  console.log('is this getting called inside deserializeUser?');
+  //console.log('What is req.user in the deserializer?');
   console.log('deserialize id is: ', id);
-  //find a user and then say done(null, user)
+  //console.log('session is', passport.session);
   pg.connect(connectionString, function (err, client) {
-    client.query("select username, password from people where username = $1", [id],
+    client.query("select username, password from people where email = $1", [id],
   function (err, response) {
-    console.log('this is the response in deserializer', response);
-    username = response.rows[0].username;
+  //  console.log('this is the response in deserializer', response.rows[0].username);
     client.end();
-    done(null, username);
+    username = response.rows[0].email;
+
+    //at this point we put whatever we want into the req.user property (second argument
+    // of done).
+    //req.user will automatically get added to all requests coming from this client
+    //(determined by the cookie the client gives us).  It gets added on by Passport
+    //during the middleware part of processing the request.
+    done(null, 'hi');
   });
 });
 
@@ -30,63 +45,49 @@ passport.deserializeUser(function(id, done){
 
 passport.use('local', new localStrategy({
     passReqToCallback: true,
-    usernameField: 'username' //might need to be email
+
+    //this needs to be whatever property the client is
+    //sending the username in as under req.body
+    usernameField: 'username'
+
     }, function(req, username, password, done) {
       //make DB call to get userspassword. on the post body.
     console.log('right before the DB call, req.body', req.body);
 
+    //don't add in 'done' as the third parameter, it will eat the 'done' that
+    //the callback strategy needs.
     pg.connect(connectionString, function (err,client) {
-      //send pasword down to DB as well and pull out the info, that way we don't pull
-      client.query("select password, pin from people where username = 'jasont2'",
+
+      //get hashed password to compare
+      client.query("select password, pin from people where email = 'jasont2'",
       function (err, response) {
         var dbPassword = response.rows[0].password;
         client.end();
         console.log('the password from the DB', dbPassword);
-        //console.log('password from login', req.body.password);
-          console.log('req.body after sql call', req.body);
 
+          //compare passwords, bcrypt.compare hashes the first argument using
+          //the salt factor that was already set up (set up in register.js for now)
             bcrypt.compare(req.body.password, dbPassword, function(err, isMatch){
                 if(err) return err;
-                //cb(null, isMatch);
-              //  console.log('this is the incoming password.  IS it hashed?', );
                 console.log('isMatch value from compare', isMatch);
 
+                //this var gets sent to SerializeUser and is passed in as the
+                //user parameter. I think SerializeUser is what actually makes
+                //the session.
+                var objectSentToSerializer = {
+                  username: req.body.username,
+                  randomFunMessage: 'chickenButt'
+                };
+
                 if (isMatch){
-                  //console.log(done);
-                  //return done(null, req.body);
-                  return done(null, req.body);
-                  //close connection
+                  return done(null, objectSentToSerializer);
                 }
                 else{
                   return done(null, false, {message:'failed'});
                 }
-              //  console.log('does done 2 get seen?');
-                //return done(null, req.body);
             });
-          //  client.end();
       });
-
     });
-//done(null, req.body);
-
 }));
 
 module.exports = passport;
-
-// function(candidatePassword, cb){
-//     bcrypt.compare(candidatePassword, this.password, function(err, isMatch){
-//         if(err) return cb(err);
-//         cb(null, isMatch);
-//     });
-        // User.findOne({username: username}, function (err, user) {
-        //     if (err) throw err;
-        //     if (!user) return done(null, false, {message: 'Incorrect username and password'});
-        //     user.comparePassword(password, function (err, isMatch) {
-        //         if (err) throw err;
-        //         if (isMatch) {
-        //             return done(null, user);
-        //         } else {
-        //             done(null, false, {message: 'Incorrect username and password'});
-        //         }
-        //     });
-        // });

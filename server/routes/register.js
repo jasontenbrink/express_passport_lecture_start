@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var path = require('path');
-var Users = require('../models/user');
+
 var pg  = require('pg');
 var Promise = require('bluebird');
 var bcrypt = Promise.promisifyAll(require('bcrypt'));
