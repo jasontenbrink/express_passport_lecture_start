@@ -1,7 +1,7 @@
 var passport = require('passport');
 var localStrategy = require('passport-local').Strategy;
 var pg = require('pg');
-var User = require('../models/user');
+
 var Promise = require('bluebird');
 var bcrypt = require('bcrypt');
 
@@ -28,7 +28,6 @@ passport.deserializeUser(function(id, done){
   pg.connect(connectionString, function (err, client) {
     client.query("select username, password from people where email = $1", [id],
   function (err, response) {
-  //  console.log('this is the response in deserializer', response.rows[0].username);
     client.end();
     username = response.rows[0].email;
 
