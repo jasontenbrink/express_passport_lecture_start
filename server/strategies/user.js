@@ -8,36 +8,34 @@ var bcrypt = require('bcrypt');
 
 var connectionString = process.env.DATABASE_URL   || 'postgres://localhost:5432/church';
 
-//what does this do?  Create the cookie?  Or maybe the session?
-//It runs after the local strategy
+
+//It runs after the local strategy.  Creates session.
 passport.serializeUser(function(user, done){
+
   // user parameter comes from the successful "done" in the bcrypt.compare method
   // in the strategy
-  console.log('Serializer, what is the value of username', user.username);
   console.log('Serializer, what is the value of user', user);
-
-    done(null, user.username);
+  done(null, user.username);
 });
 
 // this puts things onto req.user.  Will put things on the req during
 // preprocessing/middleware
 passport.deserializeUser(function(id, done){
-  //console.log('What is req.user in the deserializer?');
   console.log('deserialize id is: ', id);
-  //console.log('session is', passport.session);
   pg.connect(connectionString, function (err, client) {
     client.query("select username, password from people where email = $1", [id],
-  function (err, response) {
-    client.end();
-    username = response.rows[0].email;
+      function (err, response) {
+        client.end();
+        username = response.rows[0].email;
 
-    //at this point we put whatever we want into the req.user property (second argument
-    // of done).
-    //req.user will automatically get added to all requests coming from this client
-    //(determined by the cookie the client gives us).  It gets added on by Passport
-    //during the middleware part of processing the request.
-    done(null, 'hi');
-  });
+        //at this point we put whatever we want into the req.user property (second argument
+        // of done).
+        //req.user will automatically get added to all requests coming from this client
+        //(determined by the cookie the client gives us).  It gets added on by Passport
+        //during the middleware part of processing the request.
+        done(null, 'hi');
+      }
+    );
 });
 
 });
