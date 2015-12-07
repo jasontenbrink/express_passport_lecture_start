@@ -15,7 +15,7 @@ passport.serializeUser(function(user, done){
   // user parameter comes from the successful "done" in the bcrypt.compare method
   // in the strategy
   console.log('Serializer, what is the value of user', user);
-  done(null, user.username);
+  done(null, user.username);//this value (the second one) is passed into the deserializer 'id' parameter
 });
 
 // this puts things onto req.user.  Will put things on the req during
@@ -23,17 +23,21 @@ passport.serializeUser(function(user, done){
 passport.deserializeUser(function(id, done){
   console.log('deserialize id is: ', id);
   pg.connect(connectionString, function (err, client) {
-    client.query("select username, password from people where email = $1", [id],
+    client.query("select email from people where email = $1", [id],
       function (err, response) {
-        client.end();
-        username = response.rows[0].email;
+      //  client.end();
+        console.log('deserializer, response', response.rows[0]);
+        username = response.rows[0];
 
         //at this point we put whatever we want into the req.user property (second argument
         // of done).
         //req.user will automatically get added to all requests coming from this client
         //(determined by the cookie the client gives us).  It gets added on by Passport
         //during the middleware part of processing the request.
-        done(null, 'hi');
+        done(null, username);
+        //username must be an object, that is what passport expects in order to
+        //do several things, such as set up isAuthenticated(). I had been passing
+        //in a string object and isAuthenticated wasn't showing up
       }
     );
 });
@@ -56,7 +60,7 @@ passport.use('local', new localStrategy({
     pg.connect(connectionString, function (err,client) {
 
       //get hashed password to compare
-      client.query("select password, pin from people where email = 'jasont2'",
+      client.query("select password, pin from people where email = $1", [req.body.username],
       function (err, response) {
         var dbPassword = response.rows[0].password;
         client.end();
@@ -77,10 +81,13 @@ passport.use('local', new localStrategy({
                 };
 
                 if (isMatch){
+                  //req.login(objectSentToSerializer, done);
                   return done(null, objectSentToSerializer);
                 }
                 else{
+                  console.log('authentication failed');
                   return done(null, false, {message:'failed'});
+
                 }
             });
       });

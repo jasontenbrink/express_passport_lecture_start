@@ -9,7 +9,10 @@ var session = require('express-session');
 var register = require('./routes/register');
 var user = require('./routes/user');
 var index = require('./routes/index');
-
+var path = require('path');
+var logout = require('./routes/logout.js');
+var authenticate = require('./routes/authenticate.js');
+var login = require('./routes/login.js');
 
 // App Set //
 app.set("port", (process.env.PORT || 5000));
@@ -17,6 +20,7 @@ app.set("port", (process.env.PORT || 5000));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.use(express.static (path.join(__dirname, 'public')));
 // Passport Session Configuration //
 app.use(session({
    secret: 'secret',
@@ -30,8 +34,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-//app.use('/register', register);
-//app.use('/user', user);
+
+app.use('/register', register);
+app.use('/login', login);
+
+//routes that require authentication
+app.use('/*', authenticate);
+app.use('/logout', logout);
+app.use('/user', user);
 app.use('/', index);
 
 // Mongo Connection //

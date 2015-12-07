@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Index</title>
+        <title>Log In</title>
 
         <link rel="stylesheet" href="/vendors/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="/assets/styles/style.css">
 
-        <script type="text/javascript" src="/vendors/jquery/dist/jquery.min.js"></script>
-        <script type="text/javascript" src="/assets/scripts/app.min.js"></script>
+        <!-- <script type="text/javascript" src="/vendors/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript" src="/assets/scripts/app.min.js"></script> -->
+        <!-- may want to not expose all the javascript of the app
+        on the login.  Have a seperate js file for the login page. -->
     </head>
 
     <body>
+      Login
         <div class="instructions">
             <div class="container">
                 <h1 class="lead">Passport Login</h1>
             </div>
         </div>
         <div class="container">
-            <form action="/" method="post">
+            <form action="/login" method="post">
                 <div>
                     <label for="username">Username:</label>
                     <input type="text" name="username" id="username" value="jasont2"/>

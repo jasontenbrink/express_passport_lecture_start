@@ -13,10 +13,10 @@ router.post('/',
         })
 );
 
-router.get("/*", function(req, res, next){
+router.get("/", function(req, res, next){
   //  var file = req.params[0] || 'views/index.html';
-    console.log("I made it to the index page.");
-    res.sendFile(path.join(__dirname, "../public/views/index.html"));
+    console.log('this is the get path on the login route');
+    res.sendFile(path.join(__dirname, "../public/views/login.html"));
 });
 
 module.exports = router;
